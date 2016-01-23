@@ -213,7 +213,7 @@ DSJIKeyboardDevice DSJIKeyboard = DSJIKeyboardDevice();
 extern "C"{
 #endif 
   // USB_PUBLIC uchar usbFunctionSetup
-	uchar usbFunctionSetup(uchar data[8]) {
+	usbMsgLen_t usbFunctionSetup(uchar data[8]) {
     usbRequest_t    *rq = (usbRequest_t *)((void *)data);
 
     usbMsgPtr = DSJIKeyboard.reportBuffer; //
