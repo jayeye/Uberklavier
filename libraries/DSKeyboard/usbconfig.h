@@ -5,7 +5,9 @@
  * Tabsize: 4
  * Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
- * This Revision: $Id: usbconfig-prototype.h 767 2009-08-22 11:39:22Z cs $
+ *
+ * Merged changes from newer usbconfig-prototype at vusb 
+ * 39202048ea1fb7d14a5970c805ffd5f0b7f0fcdf (pulled 20160123)
  */
 
 #ifndef __usbconfig_h_included__
@@ -32,9 +34,24 @@ section at the end of this file).
 #define USB_CFG_DPLUS_BIT       2
 
 #elif defined (__AVR_ATtiny45__) || defined (__AVR_ATtiny85__)
+#error "TODO(ji): remove this; it's here to verify that I have the right if"
 #define USB_CFG_IOPORTNAME      B
+/* This is the port where the USB bus is connected. When you configure it to
+ * "B", the registers PORTB, PINB and DDRB will be used.
+ */
 #define USB_CFG_DMINUS_BIT      3
+/* This is the bit number in USB_CFG_IOPORT where the USB D- line is connected.
+ * This may be any bit in the port.
+ */
 #define USB_CFG_DPLUS_BIT       4
+/* This is the bit number in USB_CFG_IOPORT where the USB D+ line is connected.
+ * This may be any bit in the port. Please note that D+ must also be connected
+ * to interrupt pin INT0! [You can also use other interrupts, see section
+ * "Optional MCU Description" below, or you can connect D- to the interrupt, as
+ * it is required if you use the USB_COUNT_SOF feature. If you use D- for the
+ * interrupt, the USB interrupt will also be triggered at Start-Of-Frame
+ * markers every millisecond.]
+ */
 
 #elif defined (__AVR_ATtiny87__) || defined (__AVR_ATtiny167__)
 #define USB_CFG_IOPORTNAME      B
@@ -51,21 +68,17 @@ section at the end of this file).
 #define USB_CFG_DMINUS_BIT      3
 #define USB_CFG_DPLUS_BIT       2
 #endif
-/* This is the bit number in USB_CFG_IOPORT where the USB D+ line is connected.
- * This may be any bit in the port. Please note that D+ must also be connected
- * to interrupt pin INT0! [You can also use other interrupts, see section
- * "Optional MCU Description" below, or you can connect D- to the interrupt, as
- * it is required if you use the USB_COUNT_SOF feature. If you use D- for the
- * interrupt, the USB interrupt will also be triggered at Start-Of-Frame
- * markers every millisecond.]
- */
+
 #define USB_CFG_CLOCK_KHZ       (F_CPU/1000)
 /* Clock rate of the AVR in kHz. Legal values are 12000, 12800, 15000, 16000,
- * 16500 and 20000. The 12.8 MHz and 16.5 MHz versions of the code require no
- * crystal, they tolerate +/- 1% deviation from the nominal frequency. All
- * other rates require a precision of 2000 ppm and thus a crystal!
- * Default if not specified: 12 MHz
+ * 16500, 18000 and 20000. The 12.8 MHz and 16.5 MHz versions of the code
+ * require no crystal, they tolerate +/- 1% deviation from the nominal
+ * frequency. All other rates require a precision of 2000 ppm and thus a
+ * crystal!
+ * Since F_CPU should be defined to your actual clock rate anyway, you should
+ * not need to modify this setting.
  */
+
 #define USB_CFG_CHECK_CRC       0
 /* Define this to 1 if you want that the driver checks integrity of incoming
  * data packets (CRC checks). CRC checks cost quite a bit of code size and are
@@ -160,6 +173,11 @@ section at the end of this file).
  * of the macros usbDisableAllRequests() and usbEnableAllRequests() in
  * usbdrv.h.
  */
+#define USB_CFG_DRIVER_FLASH_PAGE       0
+/* If the device has more than 64 kBytes of flash, define this to the 64 k page
+ * where the driver's constants (descriptors) are located. Or in other words:
+ * Define this to 1 for boot loaders on the ATMega128.
+ */
 #define USB_CFG_LONG_TRANSFERS          0
 /* Define this to 1 if you want to send/receive blocks of more than 254 bytes
  * in a single control-in or control-out transfer. Note that the capability
@@ -229,7 +247,7 @@ section at the end of this file).
 
 /* -------------------------- Device Description --------------------------- */
 
-#define USB_CFG_VENDOR_ID 0xc0, 0x16
+#define USB_CFG_VENDOR_ID 0xc0, 0x16  // 0x16c0 is voti.nl
 /* USB vendor ID for the device, low byte first. If you have registered your
  * own Vendor ID, define it here. Otherwise you may use one of obdev's free
  * shared VID/PID pairs. Be sure to read USB-IDs-for-free.txt for rules!
@@ -252,8 +270,8 @@ section at the end of this file).
 #define USB_CFG_DEVICE_VERSION  0x00, 0x01
 /* Version number of the device: Minor number first, then major number.
  */
-#define USB_CFG_VENDOR_NAME     'd','i','g','i','s','t','u','m','p','.','c','o','m'
-#define USB_CFG_VENDOR_NAME_LEN 13
+#define USB_CFG_VENDOR_NAME     't','l','a','.','o','r','g'
+#define USB_CFG_VENDOR_NAME_LEN 7
 /* These two values define the vendor name returned by the USB device. The name
  * must be given as a list of characters under single quotes. The characters
  * are interpreted as Unicode (UTF-16) entities.
@@ -262,8 +280,8 @@ section at the end of this file).
  * obdev's free shared VID/PID pair. See the file USB-IDs-for-free.txt for
  * details.
  */
-#define USB_CFG_DEVICE_NAME     'D','i','g','i','K','e','y'
-#define USB_CFG_DEVICE_NAME_LEN 7
+#define USB_CFG_DEVICE_NAME     'U','b','e','r','k','l','a','v','i','e','r'
+#define USB_CFG_DEVICE_NAME_LEN 10
 /* Same as above for the device name. If you don't want a device name, undefine
  * the macros. See the file USB-IDs-for-free.txt before you assign a name if
  * you use a shared VID/PID.
@@ -366,6 +384,16 @@ section at the end of this file).
 #define USB_CFG_DESCR_PROPS_HID_REPORT              0
 #define USB_CFG_DESCR_PROPS_UNKNOWN                 0
 
+
+// TODO(ji): Does this affect me?
+//#define usbMsgPtr_t unsigned short
+/* If usbMsgPtr_t is not defined, it defaults to 'uchar *'. We may define it to
+ * a scalar type here because gcc generates slightly shorter code for scalar
+ * arithmetics than for pointer arithmetics. Remove this define for backward
+ * type compatibility or define it to an 8 bit type if you use data in RAM only
+ * and all RAM is below 256 bytes (tiny memory model in IAR CC).
+ */
+
 /* ----------------------- Optional MCU Description ------------------------ */
 
 /* The following configurations have working defaults in usbdrv.h. You
@@ -388,7 +416,8 @@ section at the end of this file).
 #endif
 
 
- #if defined (__AVR_ATtiny45__) || defined (__AVR_ATtiny85__) 
+#if defined (__AVR_ATtiny45__) || defined (__AVR_ATtiny85__) 
+#error "TODO(ji): remove this"
 #define USB_INTR_CFG            PCMSK
 #define USB_INTR_CFG_SET        (1<<USB_CFG_DPLUS_BIT)
 #define USB_INTR_ENABLE_BIT     PCIE
