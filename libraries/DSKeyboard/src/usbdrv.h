@@ -10,6 +10,23 @@
 #ifndef __usbdrv_h_included__
 #define __usbdrv_h_included__
 
+// TODO(ji): is the __Cpp necessary?
+
+#ifdef __cplusplus
+// This header should be included as C-header from C++ code. However if usbdrv.c
+// is incorporated into a C++ module with an include, function names are mangled
+// and this header must be parsed as C++ header, too. External modules should be
+// treated as C, though, because they are compiled separately as C code.
+extern "C" {
+#endif
+
+#include "usbconfig.h"
+#include "usbportability.h"
+
+#ifdef __cplusplus
+}
+#endif
+
 /*
 Hardware Prerequisites:
 =======================
@@ -115,23 +132,6 @@ USB messages, even if they address another (low-speed) device on the same bus.
 
 */
 
-
-#ifdef __cplusplus
-// This header should be included as C-header from C++ code. However if usbdrv.c
-// is incorporated into a C++ module with an include, function names are mangled
-// and this header must be parsed as C++ header, too. External modules should be
-// treated as C, though, because they are compiled separately as C code.
-extern "C" {
-#endif
-
-#include "usbconfig.h"
-#include "usbportability.h"
-
-#ifdef __cplusplus
-}
-#endif
-
-
 /* ------------------------------------------------------------------------- */
 /* --------------------------- Module Interface ---------------------------- */
 /* ------------------------------------------------------------------------- */
@@ -190,12 +190,22 @@ extern "C" {
 
 struct usbRequest;  /* forward declaration */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 USB_PUBLIC void usbInit(void);
 /* This function must be called before interrupts are enabled and the main
  * loop is entered. We exepct that the PORT and DDR bits for D+ and D- have
  * not been changed from their default status (which is 0). If you have changed
  * them, set both back to 0 (configure them as input with no internal pull-up).
  */
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 USB_PUBLIC void usbPoll(void);
 /* This function must be called at regular intervals from the main loop.
  * Maximum delay between calls is somewhat less than 50ms (USB timeout for
@@ -203,11 +213,19 @@ USB_PUBLIC void usbPoll(void);
  * Please note that debug outputs through the UART take ~ 0.5ms per byte
  * at 19200 bps.
  */
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
 extern usbMsgPtr_t usbMsgPtr;
 /* This variable may be used to pass transmit data to the driver from the
  * implementation of usbFunctionWrite(). It is also used internally by the
  * driver for standard control requests.
  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 USB_PUBLIC usbMsgLen_t usbFunctionSetup(uchar data[8]);
 /* This function is called when the driver receives a SETUP transaction from
  * the host which is not answered by the driver itself (in practice: class and
@@ -235,13 +253,27 @@ USB_PUBLIC usbMsgLen_t usbFunctionSetup(uchar data[8]);
  * Note that calls to the functions usbFunctionRead() and usbFunctionWrite()
  * are only done if enabled by the configuration in usbconfig.h.
  */
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 USB_PUBLIC usbMsgLen_t usbFunctionDescriptor(struct usbRequest *rq);
 /* You need to implement this function ONLY if you provide USB descriptors at
  * runtime (which is an expert feature). It is very similar to
  * usbFunctionSetup() above, but it is called only to request USB descriptor
  * data. See the documentation of usbFunctionSetup() above for more info.
  */
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
 #if USB_CFG_HAVE_INTRIN_ENDPOINT
+#ifdef __cplusplus
+extern "C" {
+#endif
 USB_PUBLIC void usbSetInterrupt(uchar *data, uchar len);
 /* This function sets the message which will be sent during the next interrupt
  * IN transfer. The message is copied to an internal buffer and must not exceed
@@ -249,13 +281,23 @@ USB_PUBLIC void usbSetInterrupt(uchar *data, uchar len);
  * interrupt status to the host.
  * If you need to transfer more bytes, use a control read after the interrupt.
  */
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
 #define usbInterruptIsReady()   (usbTxLen1 & 0x10)
 /* This macro indicates whether the last interrupt message has already been
  * sent. If you set a new interrupt message before the old was sent, the
  * message already buffered will be lost.
  */
 #if USB_CFG_HAVE_INTRIN_ENDPOINT3
+#ifdef __cplusplus
+extern "C"{
+#endif
 USB_PUBLIC void usbSetInterrupt3(uchar *data, uchar len);
+#ifdef __cplusplus
+} // extern "C"
+#endif
 #define usbInterruptIsReady3()   (usbTxLen3 & 0x10)
 /* Same as above for endpoint 3 */
 #endif
@@ -271,6 +313,9 @@ USB_PUBLIC void usbSetInterrupt3(uchar *data, uchar len);
  */
 #endif  /* USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH */
 #if USB_CFG_IMPLEMENT_FN_WRITE
+#ifdef __cplusplus
+extern "C" {
+#endif
 USB_PUBLIC uchar usbFunctionWrite(uchar *data, uchar len);
 /* This function is called by the driver to provide a control transfer's
  * payload data (control-out). It is called in chunks of up to 8 bytes. The
@@ -287,9 +332,16 @@ USB_PUBLIC uchar usbFunctionWrite(uchar *data, uchar len);
  * In order to get usbFunctionWrite() called, define USB_CFG_IMPLEMENT_FN_WRITE
  * to 1 in usbconfig.h and return 0xff in usbFunctionSetup()..
  */
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
 #endif /* USB_CFG_IMPLEMENT_FN_WRITE */
 #if USB_CFG_IMPLEMENT_FN_READ
-USB_PUBLIC uchar usbFunctionRead(uchar *data, uchar len);
+#ifdef __cplusplus
+extern "C" {
+#endif
+SB_PUBLIC uchar usbFunctionRead(uchar *data, uchar len);
 /* This function is called by the driver to ask the application for a control
  * transfer's payload data (control-in). It is called in chunks of up to 8
  * bytes each. You should copy the data to the location given by 'data' and
@@ -299,16 +351,27 @@ USB_PUBLIC uchar usbFunctionRead(uchar *data, uchar len);
  * In order to get usbFunctionRead() called, define USB_CFG_IMPLEMENT_FN_READ
  * to 1 in usbconfig.h and return 0xff in usbFunctionSetup()..
  */
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
 #endif /* USB_CFG_IMPLEMENT_FN_READ */
 
 extern uchar usbRxToken;    /* may be used in usbFunctionWriteOut() below */
 #if USB_CFG_IMPLEMENT_FN_WRITEOUT
+#ifdef __cplusplus
+extern "C" {
+#endif
 USB_PUBLIC void usbFunctionWriteOut(uchar *data, uchar len);
 /* This function is called by the driver when data is received on an interrupt-
  * or bulk-out endpoint. The endpoint number can be found in the global
  * variable usbRxToken. You must define USB_CFG_IMPLEMENT_FN_WRITEOUT to 1 in
  * usbconfig.h to get this function called.
  */
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
 #endif /* USB_CFG_IMPLEMENT_FN_WRITEOUT */
 #ifdef USB_CFG_PULLUP_IOPORTNAME
 #define usbDeviceConnect()      ((USB_PULLUP_DDR |= (1<<USB_CFG_PULLUP_BIT)), \
@@ -339,7 +402,14 @@ extern unsigned usbCrc16(unsigned data, uchar len);
  * data. We enforce 16 bit calling conventions for compatibility with IAR's
  * tiny memory model.
  */
+#ifdef __cplusplus
+extern "C"{
+#endif
 extern unsigned usbCrc16Append(unsigned data, uchar len);
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #define usbCrc16Append(data, len)    usbCrc16Append((unsigned)(data), len)
 /* This function is equivalent to usbCrc16() above, except that it appends
  * the 2 bytes CRC (lowbyte first) in the 'data' buffer after reading 'len'
@@ -485,11 +555,17 @@ PROGMEM const
 #endif
 char usbDescriptorConfiguration[];
 
+#ifdef __cplusplus
+extern "C"{
+#endif
 extern
 #if !(USB_CFG_DESCR_PROPS_HID_REPORT & USB_PROP_IS_RAM)
 PROGMEM const
 #endif
 char usbDescriptorHidReport[];
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 extern
 #if !(USB_CFG_DESCR_PROPS_STRING_0 & USB_PROP_IS_RAM)

@@ -34,7 +34,6 @@ section at the end of this file).
 #define USB_CFG_DPLUS_BIT       2
 
 #elif defined (__AVR_ATtiny45__) || defined (__AVR_ATtiny85__)
-#error "TODO(ji): remove this; it's here to verify that I have the right if"
 #define USB_CFG_IOPORTNAME      B
 /* This is the port where the USB bus is connected. When you configure it to
  * "B", the registers PORTB, PINB and DDRB will be used.
@@ -247,7 +246,8 @@ section at the end of this file).
 
 /* -------------------------- Device Description --------------------------- */
 
-#define USB_CFG_VENDOR_ID 0xc0, 0x16  // 0x16c0 is voti.nl
+//#define USB_CFG_VENDOR_ID 0xc0, 0x16  // 0x16c0 is voti.nl
+#define USB_CFG_VENDOR_ID 0xb3, 0x04    // 0x04b3 is IBM
 /* USB vendor ID for the device, low byte first. If you have registered your
  * own Vendor ID, define it here. Otherwise you may use one of obdev's free
  * shared VID/PID pairs. Be sure to read USB-IDs-for-free.txt for rules!
@@ -256,7 +256,8 @@ section at the end of this file).
  * with libusb: 0x16c0/0x5dc.  Use this VID/PID pair ONLY if you understand
  * the implications!
  */
-#define USB_CFG_DEVICE_ID 0xdb, 0x27
+//#define USB_CFG_DEVICE_ID 0xdb, 0x27
+#define USB_CFG_DEVICE_ID 0x0b, 0xb0
 /* This is the ID of the product, low byte first. It is interpreted in the
  * scope of the vendor ID. If you have registered your own VID with usb.org
  * or if you have licensed a PID from somebody else, define it here. Otherwise
@@ -281,7 +282,7 @@ section at the end of this file).
  * details.
  */
 #define USB_CFG_DEVICE_NAME     'U','b','e','r','k','l','a','v','i','e','r'
-#define USB_CFG_DEVICE_NAME_LEN 10
+#define USB_CFG_DEVICE_NAME_LEN 11
 /* Same as above for the device name. If you don't want a device name, undefine
  * the macros. See the file USB-IDs-for-free.txt before you assign a name if
  * you use a shared VID/PID.
@@ -417,7 +418,6 @@ section at the end of this file).
 
 
 #if defined (__AVR_ATtiny45__) || defined (__AVR_ATtiny85__) 
-#error "TODO(ji): remove this"
 #define USB_INTR_CFG            PCMSK
 #define USB_INTR_CFG_SET        (1<<USB_CFG_DPLUS_BIT)
 #define USB_INTR_ENABLE_BIT     PCIE
