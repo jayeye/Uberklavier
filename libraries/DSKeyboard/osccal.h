@@ -4,7 +4,6 @@
  * Tabsize: 4
  * Copyright: (c) 2008 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
- * This Revision: $Id: osccal.h 762 2009-08-12 17:10:30Z cs $
  */
 
 /*
@@ -20,6 +19,9 @@ function must be enabled in usbconfig.h by defining
 USB_CFG_HAVE_MEASURE_FRAME_LENGTH to 1. It is recommended to call
 calibrateOscillator() from the reset hook in usbconfig.h:
 */
+
+// TODO(ji): revisit this after I've had some experience with the stability
+// of the oscillator. May have to use interrupts on D-. 
 
 #ifndef __ASSEMBLER__
 #include <avr/interrupt.h>  // for sei()
